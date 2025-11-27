@@ -1,7 +1,8 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+﻿import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import type { DragEvent, ForwardedRef } from 'react';
-import { Button, Space, message, Tag } from 'antd';
-import { ReloadOutlined, CalculatorOutlined, ExportOutlined, InboxOutlined } from '@ant-design/icons';
+import { Button, Space, Tag, message, Spin } from 'antd';
+import { ReloadOutlined, CalculatorOutlined, ExportOutlined, InboxOutlined, BugOutlined } from '@ant-design/icons';
+import api from '../utils/api';
 import './CardSetBoard.css';
 
 type CardColor = 'red' | 'blue' | 'yellow' | 'green';
@@ -12,13 +13,13 @@ interface CardFace {
   english: string;
   value: number;
   color: CardColor;
-  image: string;
+  image?: string | null;
 }
 
 interface CardDefinition {
   id: string;
-  front: Omit<CardFace, 'image'>;
-  back: Omit<CardFace, 'image'>;
+  front: CardFace;
+  back: CardFace;
 }
 
 export interface ParsedCardItem {
@@ -42,6 +43,10 @@ export interface CardSetState {
         value: number;
         color: CardColor;
         slotIndex: number;
+        row?: number;
+        col?: number;
+        rowLabel?: string;
+        positionLabel?: string;
       }
     | null
   >;
@@ -60,75 +65,7 @@ export interface CardSetHandle {
   captureImage: () => Promise<Blob>;
 }
 
-const cards: CardDefinition[] = [
-  {
-    id: 'card_01',
-    front: { title: '悲观', english: 'Frustrated', value: 3, color: 'blue' },
-    back: { title: '乐观', english: 'Optimistic', value: 1, color: 'red' },
-  },
-  {
-    id: 'card_02',
-    front: { title: '他人认可最重要', english: 'Humans are the most important', value: 2, color: 'red' },
-    back: { title: '事情结果最重要', english: 'Result is the most important', value: 2, color: 'yellow' },
-  },
-  {
-    id: 'card_03',
-    front: { title: '主动帮助他人', english: 'Always trying to help others', value: 2, color: 'red' },
-    back: { title: '静待问题过去', english: 'Waiting for things to go away', value: 2, color: 'green' },
-  },
-  {
-    id: 'card_04',
-    front: { title: '条理', english: 'Organized', value: 1, color: 'blue' },
-    back: { title: '随意', english: 'Random', value: 3, color: 'red' },
-  },
-  {
-    id: 'card_05',
-    front: { title: '以他人为中心', english: 'Others-centered', value: 1, color: 'green' },
-    back: { title: '以自我为中心', english: 'Self-centered', value: 3, color: 'yellow' },
-  },
-  {
-    id: 'card_06',
-    front: { title: '越挫越勇', english: "What doesn't kill one makes one stronger", value: 1, color: 'yellow' },
-    back: { title: '逆来顺受', english: 'Conservative and hold back', value: 3, color: 'green' },
-  },
-  {
-    id: 'card_07',
-    front: { title: '目标坚定', english: 'Determined', value: 1, color: 'yellow' },
-    back: { title: '缺乏主见', english: 'Hold back', value: 3, color: 'green' },
-  },
-  {
-    id: 'card_08',
-    front: { title: '批判性强', english: 'Critical', value: 3, color: 'yellow' },
-    back: { title: '平和宽容', english: 'Peaceful and tolerant', value: 1, color: 'green' },
-  },
-  {
-    id: 'card_09',
-    front: { title: '发现问题先研究', english: 'Study first when there is a problem', value: 2, color: 'blue' },
-    back: { title: '发现问题先解决', english: 'Act immediately once there is a problem', value: 2, color: 'yellow' },
-  },
-  {
-    id: 'card_10',
-    front: { title: '情绪化', english: 'Emotional', value: 3, color: 'red' },
-    back: { title: '自律', english: 'Self-discipline', value: 1, color: 'blue' },
-  },
-  {
-    id: 'card_11',
-    front: { title: '内心保守', english: 'Conservative', value: 3, color: 'blue' },
-    back: { title: '乐于分享', english: 'Enjoy sharing', value: 1, color: 'red' },
-  },
-  {
-    id: 'card_12',
-    front: { title: '相安无事最重要', english: 'Waiting for things to go away', value: 2, color: 'green' },
-    back: { title: '坚持原则最重要', english: 'Sticking to the principles is the most important', value: 2, color: 'blue' },
-  },
-];
-
-const imageBase = '/cardset';
 const emptySlots = () => Array<SlotCard | null>(12).fill(null);
-const initialDeckFace = cards.reduce<Record<string, CardSide>>((acc, card) => {
-  acc[card.id] = 'front';
-  return acc;
-}, {});
 
 const slotScoreLabel = (score: number) => {
   if (score > 17) return '超级';
@@ -139,12 +76,11 @@ const slotScoreLabel = (score: number) => {
 const scoreLine = (scores: Record<CardColor, number>) =>
   `红: ${scores.red}（${slotScoreLabel(scores.red)}） | 蓝: ${scores.blue}（${slotScoreLabel(scores.blue)}） | 黄: ${scores.yellow}（${slotScoreLabel(scores.yellow)}） | 绿: ${scores.green}（${slotScoreLabel(scores.green)}）`;
 
-const getFace = (card: CardDefinition, side: CardSide): CardFace => {
-  const face = card[side];
-  return {
-    ...face,
-    image: `${imageBase}/${encodeURIComponent(face.title)}.png`,
-  };
+const colorTone: Record<CardColor, string> = {
+  red: '#fecdd3',
+  blue: '#bfdbfe',
+  yellow: '#fef9c3',
+  green: '#bbf7d0',
 };
 
 const parsePosition = (position: number | string | undefined): number | null => {
@@ -155,30 +91,54 @@ const parsePosition = (position: number | string | undefined): number | null => 
   return idx >= 0 && idx < 12 ? idx : null;
 };
 
-const matchCardByName = (name?: string) => {
-  if (!name) return null;
-  const target = name.trim();
-  const matchFront = cards.find((c) => c.front.title === target || c.front.english === target || c.id === target);
-  if (matchFront) return { card: matchFront, side: 'front' as CardSide };
-  const matchBack = cards.find((c) => c.back.title === target || c.back.english === target);
-  if (matchBack) return { card: matchBack, side: 'back' as CardSide };
-  return null;
-};
-
-const cardMap = cards.reduce<Record<string, CardDefinition>>((acc, card) => {
-  acc[card.id] = card;
-  return acc;
-}, {});
-
 function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref: ForwardedRef<CardSetHandle>) {
+  const [cards, setCards] = useState<CardDefinition[]>([]);
+  const [loadingCards, setLoadingCards] = useState(false);
   const [slots, setSlots] = useState<(SlotCard | null)[]>(() => emptySlots());
   const [used, setUsed] = useState<Set<string>>(() => new Set());
-  const [deckFace, setDeckFace] = useState<Record<string, CardSide>>(() => ({ ...initialDeckFace }));
-  const [scoreText, setScoreText] = useState('当前未计分，点击“计算得分”查看阵容得分。');
+  const [deckFace, setDeckFace] = useState<Record<string, CardSide>>(() => ({}));
+  const [scoreText, setScoreText] = useState('当前未计分，点击“计算得分”查看阵容得分');
   const dragPayload = useRef<DragPayload | null>(null);
 
+  const cardMap = useMemo(
+    () =>
+      cards.reduce<Record<string, CardDefinition>>((acc, card) => {
+        acc[card.id] = card;
+        return acc;
+      }, {}),
+    [cards],
+  );
+
   const usedCount = useMemo(() => slots.filter(Boolean).length, [slots]);
-  const unusedCards = useMemo(() => cards.filter((c) => !used.has(c.id)), [used]);
+  const unusedCards = useMemo(() => cards.filter((c) => !used.has(c.id)), [cards, used]);
+
+  useEffect(() => {
+    const fetchCards = async () => {
+      setLoadingCards(true);
+      try {
+        const { data } = await api.get<CardDefinition[]>('/ai/cards');
+        setCards(data || []);
+      } catch (err: any) {
+        message.error(err?.message || '卡牌列表加载失败');
+        setCards([]);
+      } finally {
+        setLoadingCards(false);
+      }
+    };
+    fetchCards();
+  }, []);
+
+  useEffect(() => {
+    if (!cards.length) return;
+    const nextDeck = cards.reduce<Record<string, CardSide>>((acc, card) => {
+      acc[card.id] = 'front';
+      return acc;
+    }, {});
+    setDeckFace(nextDeck);
+    setSlots(emptySlots());
+    setUsed(new Set());
+    setScoreText('当前未计分，点击“计算得分”查看阵容得分');
+  }, [cards]);
 
   const calculateScores = (currentSlots: (SlotCard | null)[]) => {
     const scores: Record<CardColor, number> = { red: 0, blue: 0, yellow: 0, green: 0 };
@@ -192,21 +152,48 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   };
   const currentScores = useMemo(() => calculateScores(slots), [slots]);
 
+  const getFace = (card: CardDefinition, side: CardSide): CardFace => {
+    const face = card[side];
+    return {
+      ...face,
+      image: face.image || null,
+    };
+  };
+
+  const matchCardByName = (name?: string) => {
+    if (!name) return null;
+    const target = name.trim();
+    const matchFront = cards.find((c) => c.front.title === target || c.front.english === target || c.id === target);
+    if (matchFront) return { card: matchFront, side: 'front' as CardSide };
+    const matchBack = cards.find((c) => c.back.title === target || c.back.english === target);
+    if (matchBack) return { card: matchBack, side: 'back' as CardSide };
+    return null;
+  };
+
+  const slotToLayoutItem = (slot: SlotCard, idx: number) => {
+    const slotIndex = slot.slotIndex ?? idx;
+    const row = Math.floor(slotIndex / 4) + 1;
+    const col = (slotIndex % 4) + 1;
+    const rowLabel = row === 1 ? '第一排' : row === 2 ? '第二排' : '第三排';
+    const positionLabel = `${rowLabel} 第${col}列`;
+    return {
+      cardId: slot.cardId,
+      side: slot.side,
+      title: slot.title,
+      english: slot.english,
+      value: slot.value,
+      color: slot.color,
+      slotIndex,
+      row,
+      col,
+      rowLabel,
+      positionLabel,
+    };
+  };
+
   useEffect(() => {
     if (!onStateChange) return;
-    const layout = slots.map((slot, idx) =>
-      slot
-        ? {
-            cardId: slot.cardId,
-            side: slot.side,
-            title: slot.title,
-            english: slot.english,
-            value: slot.value,
-            color: slot.color,
-            slotIndex: idx,
-          }
-        : null,
-    );
+    const layout = slots.map((slot, idx) => (slot ? slotToLayoutItem(slot, idx) : null));
     onStateChange({
       layout,
       scores: currentScores,
@@ -219,8 +206,45 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   const handleReset = () => {
     setSlots(emptySlots());
     setUsed(new Set());
-    setDeckFace({ ...initialDeckFace });
-    setScoreText('当前未计分，点击“计算得分”查看阵容得分。');
+    setDeckFace((prev) => {
+      const next: Record<string, CardSide> = {};
+      Object.keys(prev).forEach((key) => {
+        next[key] = 'front';
+      });
+      return next;
+    });
+    setScoreText('当前未计分，点击“计算得分”查看阵容得分');
+  };
+
+  const debugFillRandom = () => {
+    if (!cards.length) {
+      message.info('没有可用卡牌');
+      return;
+    }
+    const pool = [...cards].sort(() => Math.random() - 0.5).slice(0, 12);
+    const nextSlots = emptySlots();
+    const nextUsed = new Set<string>();
+    const nextDeckFace: Record<string, CardSide> = { ...deckFace };
+
+    pool.forEach((card, idx) => {
+      const side: CardSide = Math.random() > 0.5 ? 'back' : 'front';
+      const face = getFace(card, side);
+      nextSlots[idx] = {
+        ...face,
+        cardId: card.id,
+        side,
+        slotIndex: idx,
+      };
+      nextUsed.add(card.id);
+      nextDeckFace[card.id] = side;
+    });
+
+    setSlots(nextSlots);
+    setUsed(nextUsed);
+    setDeckFace(nextDeckFace);
+    // compute scores after auto fill for consistency
+    const scores = calculateScores(nextSlots);
+    setScoreText(scoreLine(scores));
   };
 
   const handleCalc = () => {
@@ -229,21 +253,9 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   };
 
   const handleExport = () => {
-    const layout = slots.map((slot, idx) =>
-      slot
-        ? {
-            cardId: slot.cardId,
-            side: slot.side,
-            title: slot.title,
-            english: slot.english,
-            value: slot.value,
-            color: slot.color,
-            slotIndex: idx,
-          }
-        : null,
-    );
+    const layout = slots.map((slot, idx) => (slot ? slotToLayoutItem(slot, idx) : null));
     // eslint-disable-next-line no-console
-    console.log('当前卡组摆放：', layout);
+    console.log('[cardset] 当前卡组摆放', layout);
     message.success('已将当前摆放输出到控制台');
   };
 
@@ -259,9 +271,8 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       message.error('导出失败：无法创建画布');
-      return;
+      return Promise.reject(new Error('Canvas not available'));
     }
-    // 背景
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#111827';
@@ -277,7 +288,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
         img.src = src;
       });
 
-    for (let i = 0; i < rows * cols; i++) {
+    for (let i = 0; i < rows * cols; i += 1) {
       const slot = slots[i];
       const row = Math.floor(i / cols);
       const col = i % cols;
@@ -362,7 +373,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
 
   const handleDeckDragStart = (card: CardDefinition) => (event: DragEvent<HTMLDivElement>) => {
     if (used.has(card.id)) return;
-    const side = deckFace[card.id];
+    const side = deckFace[card.id] || 'front';
     const face = getFace(card, side);
     dragPayload.current = {
       type: 'deck',
@@ -436,6 +447,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     const slot = slots[idx];
     if (!slot) return;
     const cardDef = cardMap[slot.cardId];
+    if (!cardDef) return;
     const nextSide: CardSide = slot.side === 'front' ? 'back' : 'front';
     const face = getFace(cardDef, nextSide);
     setSlots((prev) => {
@@ -461,7 +473,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
 
     const nextSlots = emptySlots();
     const nextUsed = new Set<string>();
-    const nextDeckFace = { ...initialDeckFace };
+    const nextDeckFace: Record<string, CardSide> = { ...deckFace };
 
     parsedCards.forEach((item) => {
       const match = matchCardByName(item.title || item.name || item.code);
@@ -496,26 +508,36 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
           </div>
           <Tag color="blue">{usedCount}/12 已上阵</Tag>
         </div>
-        <div className="cardset-deck-list">
-          {unusedCards.map((card) => {
-            const side = deckFace[card.id];
-            const face = getFace(card, side);
-            return (
-              <div
-                key={card.id}
-                className="cardset-deck-card"
-                draggable
-                onClick={() => toggleDeckFace(card.id)}
-                onDragStart={handleDeckDragStart(card)}
-                onDragEnd={clearDrag}
-              >
-                <span className="deck-side">{side === 'front' ? '正' : '反'}</span>
-                <img className="deck-img" src={face.image} alt={face.title} />
-              </div>
-            );
-          })}
-          {unusedCards.length === 0 && <div className="cardset-empty">所有卡牌都已放置</div>}
-        </div>
+        {loadingCards ? (
+          <div style={{ padding: 16 }}>
+            <Spin /> 加载卡牌...
+          </div>
+        ) : (
+          <div className="cardset-deck-list">
+            {unusedCards.map((card) => {
+              const side = deckFace[card.id] || 'front';
+              const face = getFace(card, side);
+              return (
+                <div
+                  key={card.id}
+                  className="cardset-deck-card"
+                  draggable
+                  onClick={() => toggleDeckFace(card.id)}
+                  onDragStart={handleDeckDragStart(card)}
+                  onDragEnd={clearDrag}
+                >
+                  <span className="deck-side">{side === 'front' ? '正' : '反'}</span>
+                  {face.image ? (
+                    <img className="deck-img" src={face.image} alt={face.title} />
+                  ) : (
+                    <div className="deck-img deck-placeholder">{face.title}</div>
+                  )}
+                </div>
+              );
+            })}
+            {unusedCards.length === 0 && <div className="cardset-empty">所有卡牌都已放置</div>}
+          </div>
+        )}
       </aside>
 
       <section className="cardset-board">
@@ -526,6 +548,9 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
             </Button>
             <Button icon={<ReloadOutlined />} onClick={handleReset}>
               重置
+            </Button>
+            <Button icon={<BugOutlined />} onClick={debugFillRandom}>
+              调试随机上阵
             </Button>
             <Button icon={<ExportOutlined />} onClick={exportAsImage}>
               导出布局图片
@@ -555,7 +580,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
                   onDragStart={handleSlotDragStart(idx)}
                   onDragEnd={clearDrag}
                 >
-                  {slot.image ? <img className="slot-img" src={slot.image} alt={slot.title} /> : null}
+                  {slot.image ? <img className="slot-img" src={slot.image} alt={slot.title} /> : <span>{slot.title}</span>}
                 </div>
               ) : (
                 <span className="cardset-placeholder">空位</span>
@@ -582,3 +607,4 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
 const CardSetBoard = forwardRef<CardSetHandle, CardSetBoardProps>(CardSetBoardBase);
 
 export default CardSetBoard;
+

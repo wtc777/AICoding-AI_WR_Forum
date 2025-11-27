@@ -1,0 +1,62 @@
+﻿[
+  {
+    "id": "card_01",
+    "front": { "title": "悲观", "english": "Frustrated", "value": 3, "color": "blue", "image": "/cardset/悲观.png" },
+    "back": { "title": "乐观", "english": "Optimistic", "value": 1, "color": "red", "image": "/cardset/乐观.png" }
+  },
+  {
+    "id": "card_02",
+    "front": { "title": "他人认可最重要", "english": "People First", "value": 2, "color": "red", "image": "/cardset/他人认可最重要.png" },
+    "back": { "title": "事情结果最重要", "english": "Outcome First", "value": 2, "color": "yellow", "image": "/cardset/事情结果最重要.png" }
+  },
+  {
+    "id": "card_03",
+    "front": { "title": "主动帮助他人", "english": "Proactive Helper", "value": 2, "color": "red", "image": "/cardset/主动帮助他人.png" },
+    "back": { "title": "静待问题过去", "english": "Wait It Out", "value": 2, "color": "green", "image": "/cardset/静待问题过去.png" }
+  },
+  {
+    "id": "card_04",
+    "front": { "title": "条理", "english": "Organized", "value": 1, "color": "blue", "image": "/cardset/条理.png" },
+    "back": { "title": "随意", "english": "Free Form", "value": 3, "color": "red", "image": "/cardset/随意.png" }
+  },
+  {
+    "id": "card_05",
+    "front": { "title": "以他人为中心", "english": "Others-Centered", "value": 1, "color": "green", "image": "/cardset/以他人为中心.png" },
+    "back": { "title": "以自我为中心", "english": "Self-Centered", "value": 3, "color": "yellow", "image": "/cardset/以自我为中心.png" }
+  },
+  {
+    "id": "card_06",
+    "front": { "title": "越挫越勇", "english": "Resilient", "value": 1, "color": "yellow", "image": "/cardset/越挫越勇.png" },
+    "back": { "title": "逆来顺受", "english": "Conservative", "value": 3, "color": "green", "image": "/cardset/逆来顺受.png" }
+  },
+  {
+    "id": "card_07",
+    "front": { "title": "目标坚定", "english": "Determined", "value": 1, "color": "yellow", "image": "/cardset/目标坚定.png" },
+    "back": { "title": "缺乏主见", "english": "Holds Back", "value": 3, "color": "green", "image": "/cardset/缺乏主见.png" }
+  },
+  {
+    "id": "card_08",
+    "front": { "title": "批判性强", "english": "Critical", "value": 3, "color": "yellow", "image": "/cardset/批判性强.png" },
+    "back": { "title": "平和宽容", "english": "Tolerant", "value": 1, "color": "green", "image": "/cardset/平和宽容.png" }
+  },
+  {
+    "id": "card_09",
+    "front": { "title": "发现问题先研究", "english": "Research First", "value": 2, "color": "blue", "image": "/cardset/发现问题先研究.png" },
+    "back": { "title": "发现问题先解决", "english": "Action First", "value": 2, "color": "yellow", "image": "/cardset/发现问题先解决.png" }
+  },
+  {
+    "id": "card_10",
+    "front": { "title": "情绪化", "english": "Emotional", "value": 3, "color": "red", "image": "/cardset/情绪化.png" },
+    "back": { "title": "自律", "english": "Disciplined", "value": 1, "color": "blue", "image": "/cardset/自律.png" }
+  },
+  {
+    "id": "card_11",
+    "front": { "title": "内心保守", "english": "Guarded", "value": 3, "color": "blue", "image": "/cardset/内心保守.png" },
+    "back": { "title": "乐于分享", "english": "Sharing", "value": 1, "color": "red", "image": "/cardset/乐于分享.png" }
+  },
+  {
+    "id": "card_12",
+    "front": { "title": "相安无事最重要", "english": "Keep the Peace", "value": 2, "color": "green", "image": "/cardset/相安无事最重要.png" },
+    "back": { "title": "坚持原则最重要", "english": "Stick to Principles", "value": 2, "color": "blue", "image": "/cardset/坚持原则最重要.png" }
+  }
+]

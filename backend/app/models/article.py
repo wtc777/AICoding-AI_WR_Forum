@@ -22,6 +22,7 @@ class Article(SQLModel, table=True):
     content_markdown: str
     content_html: str = Field(default="")
     from_reading_id: Optional[int] = Field(default=None, foreign_key="cardreading.id")
+    is_auto_generated: bool = Field(default=False, index=True)
     is_featured: bool = Field(default=False)
     is_published: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow, nullable=False)

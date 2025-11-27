@@ -10,6 +10,7 @@ class ArticleBase(BaseModel):
     title: str
     content_markdown: str
     is_published: bool = True
+    is_auto_generated: bool = False
     tag_names: List[str] = Field(default_factory=list)
     from_reading_id: Optional[int] = None
 
@@ -24,8 +25,10 @@ class ArticleRead(BaseModel):
     content_markdown: str
     content_html: str
     is_published: bool
+    is_auto_generated: bool
     is_featured: bool
     author_id: int
+    author_name: Optional[str] = None
     from_reading_id: Optional[int]
     tags: List[str] = Field(default_factory=list)
     created_at: datetime

@@ -13,8 +13,11 @@ engine = create_engine(settings.database_url, echo=False)
 
 def init_db() -> None:
     from app import models  # noqa: F401
+    from app.db.card_seed import ensure_card_definitions
 
     SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        ensure_card_definitions(session)
 
 
 @contextmanager

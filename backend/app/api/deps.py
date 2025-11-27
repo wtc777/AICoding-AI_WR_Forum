@@ -64,6 +64,26 @@ def get_current_user(
     return user
 
 
+def get_current_user_optional(
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(auth_scheme)],
+    session: Session = Depends(get_db),
+) -> User | None:
+    if credentials is None:
+        return None
+    token = credentials.credentials
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+    except JWTError:
+        return None
+    user_id = payload.get("sub")
+    if user_id is None:
+        return None
+    user = session.get(User, int(user_id))
+    if user is None or not user.is_active:
+        return None
+    return user
+
+
 def issue_token_pair(user: User) -> dict:
     access = create_token({"sub": str(user.id), "role": user.role, "type": "access"}, timedelta(minutes=settings.access_token_expire_minutes))
     refresh = create_token({"sub": str(user.id), "role": user.role, "type": "refresh"}, timedelta(days=settings.refresh_token_expire_days))

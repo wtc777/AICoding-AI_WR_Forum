@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { Card, Table, Button, message, Form, Input } from 'antd';
 import api from '../utils/api';
 import useAuthStore from '../stores/auth';
@@ -20,7 +20,7 @@ function AdminPage() {
           default_params: cfg.data.default_params ? JSON.stringify(cfg.data.default_params, null, 2) : '',
         });
       } catch (e) {
-        // ignore
+        // ignore if AI config not set
       }
     };
     load();
@@ -85,3 +85,4 @@ function AdminPage() {
 }
 
 export default AdminPage;
+

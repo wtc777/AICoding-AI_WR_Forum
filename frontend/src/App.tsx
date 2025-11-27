@@ -1,4 +1,4 @@
-import { Layout, Menu, Button } from 'antd';
+﻿import { Layout, Menu, Button } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import HomePage from './pages/HomePage';
@@ -18,7 +18,7 @@ function RequireAuth({ children }: { children: JSX.Element }) {
   const location = useLocation();
   if (!user) {
     return <Navigate to="/login" replace state={{ from: location.pathname }} />;
-  }
+    }
   return children;
 }
 
@@ -28,10 +28,12 @@ function App() {
   const { user, logout } = useAuthStore();
 
   const selected = useMemo(() => {
+    if (location.pathname.startsWith('/articles/new')) return ['write'];
+    if (location.pathname.startsWith('/articles')) return ['readings'];
     if (location.pathname.startsWith('/parse')) return ['parse'];
     if (location.pathname.startsWith('/readings')) return ['readings'];
-    if (location.pathname.startsWith('/articles/new')) return ['write'];
-    return ['home'];
+    if (location.pathname === '/') return ['home'];
+    return [];
   }, [location.pathname]);
 
   return (
@@ -81,9 +83,12 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Content>
-      <Footer style={{ textAlign: 'center' }}>AI 卡牌大师 ©2025</Footer>
+      <Footer style={{ textAlign: 'center' }}>AI 卡牌大师 (c) 2025</Footer>
     </Layout>
   );
 }
 
 export default App;
+
+
+

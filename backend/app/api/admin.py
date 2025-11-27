@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
+from datetime import datetime
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
@@ -68,3 +70,26 @@ async def test_ai(_: User = Depends(deps.require_admin)):
     if not cfg:
         return {"status": "missing_config"}
     return {"status": "ok", "model": cfg.model, "base_url": cfg.base_url}
+
+
+@router.post("/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user),
+):
+    settings = get_settings()
+    date_path = datetime.utcnow().strftime("%Y/%m/%d")
+    upload_dir = Path(settings.upload_dir) / date_path
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    suffix = Path(file.filename or "file.bin").suffix
+    safe_name = f"upload_{int(datetime.utcnow().timestamp())}{suffix}"
+    dest = upload_dir / safe_name
+
+    contents = await file.read()
+    with open(dest, "wb") as f:
+        f.write(contents)
+
+    relative = dest.relative_to(Path.cwd())
+    url = "/" + str(relative).replace("\\", "/")
+    return {"url": url}
