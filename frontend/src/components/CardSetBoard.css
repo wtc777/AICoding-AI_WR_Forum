@@ -1,0 +1,209 @@
+.cardset-wrapper {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.cardset-deck {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  position: sticky;
+  top: 0;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  display: grid;
+  gap: 12px;
+}
+
+.cardset-deck-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cardset-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #111827;
+}
+
+.cardset-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.cardset-deck-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cardset-deck-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  background: #f8fafc;
+  transition: transform 0.1s ease, box-shadow 0.12s ease;
+}
+
+.cardset-deck-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.cardset-deck-card.dragging {
+  opacity: 0.9;
+}
+
+.deck-side {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  color: #111827;
+}
+
+.deck-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.cardset-empty {
+  color: #9ca3af;
+  font-size: 13px;
+  padding: 8px;
+  text-align: center;
+}
+
+.cardset-board {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  display: grid;
+  gap: 14px;
+}
+
+.cardset-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cardset-slot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.cardset-slot {
+  position: relative;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  min-height: 140px;
+  background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 8px, #f3f4f6 8px, #f3f4f6 16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  text-align: center;
+  padding: 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
+}
+
+.cardset-slot.filled {
+  border-style: solid;
+  background: transparent;
+  padding: 0;
+}
+
+.cardset-slot.hovered {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+}
+
+.cardset-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: grab;
+  background: #fff;
+}
+
+.cardset-card.image-only {
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+.slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 10px;
+}
+
+.cardset-placeholder {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.cardset-instructions {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.cardset-instructions ol {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.cardset-score {
+  background: #0f172a;
+  color: #e5e7eb;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+@media (max-width: 1100px) {
+  .cardset-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .cardset-deck {
+    position: relative;
+    max-height: none;
+  }
+
+  .cardset-slot-grid {
+    grid-template-columns: repeat(2, minmax(140px, 1fr));
+  }
+}
