@@ -1,62 +1,206 @@
-﻿[
+[
   {
     "id": "card_01",
-    "front": { "title": "悲观", "english": "Frustrated", "value": 3, "color": "blue", "image": "/cardset/悲观.png" },
-    "back": { "title": "乐观", "english": "Optimistic", "value": 1, "color": "red", "image": "/cardset/乐观.png" }
+    "front": {
+      "title": "悲观",
+      "english": "Frustrated",
+      "value": 3,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E6%82%B2%E8%A7%82.png"
+    },
+    "back": {
+      "title": "乐观",
+      "english": "Optimistic",
+      "value": 1,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%B9%90%E8%A7%82.png"
+    }
   },
   {
     "id": "card_02",
-    "front": { "title": "他人认可最重要", "english": "People First", "value": 2, "color": "red", "image": "/cardset/他人认可最重要.png" },
-    "back": { "title": "事情结果最重要", "english": "Outcome First", "value": 2, "color": "yellow", "image": "/cardset/事情结果最重要.png" }
+    "front": {
+      "title": "他人认可最重要",
+      "english": "People First",
+      "value": 2,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%BB%96%E4%BA%BA%E8%AE%A4%E5%8F%AF%E6%9C%80%E9%87%8D%E8%A6%81.png"
+    },
+    "back": {
+      "title": "事情结果最重要",
+      "english": "Outcome First",
+      "value": 2,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%BA%8B%E6%83%85%E7%BB%93%E6%9E%9C%E6%9C%80%E9%87%8D%E8%A6%81.png"
+    }
   },
   {
     "id": "card_03",
-    "front": { "title": "主动帮助他人", "english": "Proactive Helper", "value": 2, "color": "red", "image": "/cardset/主动帮助他人.png" },
-    "back": { "title": "静待问题过去", "english": "Wait It Out", "value": 2, "color": "green", "image": "/cardset/静待问题过去.png" }
+    "front": {
+      "title": "主动帮助他人",
+      "english": "Proactive Helper",
+      "value": 2,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%B8%BB%E5%8A%A8%E5%B8%AE%E5%8A%A9%E4%BB%96%E4%BA%BA.png"
+    },
+    "back": {
+      "title": "静待问题过去",
+      "english": "Wait It Out",
+      "value": 2,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E9%9D%99%E5%BE%85%E9%97%AE%E9%A2%98%E8%BF%87%E5%8E%BB.png"
+    }
   },
   {
     "id": "card_04",
-    "front": { "title": "条理", "english": "Organized", "value": 1, "color": "blue", "image": "/cardset/条理.png" },
-    "back": { "title": "随意", "english": "Free Form", "value": 3, "color": "red", "image": "/cardset/随意.png" }
+    "front": {
+      "title": "条理",
+      "english": "Organized",
+      "value": 1,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E6%9D%A1%E7%90%86.png"
+    },
+    "back": {
+      "title": "随意",
+      "english": "Free Form",
+      "value": 3,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E9%9A%8F%E6%84%8F.png"
+    }
   },
   {
     "id": "card_05",
-    "front": { "title": "以他人为中心", "english": "Others-Centered", "value": 1, "color": "green", "image": "/cardset/以他人为中心.png" },
-    "back": { "title": "以自我为中心", "english": "Self-Centered", "value": 3, "color": "yellow", "image": "/cardset/以自我为中心.png" }
+    "front": {
+      "title": "以他人为中心",
+      "english": "Others-Centered",
+      "value": 1,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%BB%A5%E4%BB%96%E4%BA%BA%E4%B8%BA%E4%B8%AD%E5%BF%83.png"
+    },
+    "back": {
+      "title": "以自我为中心",
+      "english": "Self-Centered",
+      "value": 3,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%BB%A5%E8%87%AA%E6%88%91%E4%B8%BA%E4%B8%AD%E5%BF%83.png"
+    }
   },
   {
     "id": "card_06",
-    "front": { "title": "越挫越勇", "english": "Resilient", "value": 1, "color": "yellow", "image": "/cardset/越挫越勇.png" },
-    "back": { "title": "逆来顺受", "english": "Conservative", "value": 3, "color": "green", "image": "/cardset/逆来顺受.png" }
+    "front": {
+      "title": "越挫越勇",
+      "english": "Resilient",
+      "value": 1,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E8%B6%8A%E6%8C%AB%E8%B6%8A%E5%8B%87.png"
+    },
+    "back": {
+      "title": "逆来顺受",
+      "english": "Conservative",
+      "value": 3,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E9%80%86%E6%9D%A5%E9%A1%BA%E5%8F%97.png"
+    }
   },
   {
     "id": "card_07",
-    "front": { "title": "目标坚定", "english": "Determined", "value": 1, "color": "yellow", "image": "/cardset/目标坚定.png" },
-    "back": { "title": "缺乏主见", "english": "Holds Back", "value": 3, "color": "green", "image": "/cardset/缺乏主见.png" }
+    "front": {
+      "title": "目标坚定",
+      "english": "Determined",
+      "value": 1,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E7%9B%AE%E6%A0%87%E5%9D%9A%E5%AE%9A.png"
+    },
+    "back": {
+      "title": "缺乏主见",
+      "english": "Holds Back",
+      "value": 3,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E7%BC%BA%E4%B9%8F%E4%B8%BB%E8%A7%81.png"
+    }
   },
   {
     "id": "card_08",
-    "front": { "title": "批判性强", "english": "Critical", "value": 3, "color": "yellow", "image": "/cardset/批判性强.png" },
-    "back": { "title": "平和宽容", "english": "Tolerant", "value": 1, "color": "green", "image": "/cardset/平和宽容.png" }
+    "front": {
+      "title": "批判性强",
+      "english": "Critical",
+      "value": 3,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E6%89%B9%E5%88%A4%E6%80%A7%E5%BC%BA.png"
+    },
+    "back": {
+      "title": "平和宽容",
+      "english": "Tolerant",
+      "value": 1,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E5%B9%B3%E5%92%8C%E5%AE%BD%E5%AE%B9.png"
+    }
   },
   {
     "id": "card_09",
-    "front": { "title": "发现问题先研究", "english": "Research First", "value": 2, "color": "blue", "image": "/cardset/发现问题先研究.png" },
-    "back": { "title": "发现问题先解决", "english": "Action First", "value": 2, "color": "yellow", "image": "/cardset/发现问题先解决.png" }
+    "front": {
+      "title": "发现问题先研究",
+      "english": "Research First",
+      "value": 2,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E5%8F%91%E7%8E%B0%E9%97%AE%E9%A2%98%E5%85%88%E7%A0%94%E7%A9%B6.png"
+    },
+    "back": {
+      "title": "发现问题先解决",
+      "english": "Action First",
+      "value": 2,
+      "color": "yellow",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E5%8F%91%E7%8E%B0%E9%97%AE%E9%A2%98%E5%85%88%E8%A7%A3%E5%86%B3.png"
+    }
   },
   {
     "id": "card_10",
-    "front": { "title": "情绪化", "english": "Emotional", "value": 3, "color": "red", "image": "/cardset/情绪化.png" },
-    "back": { "title": "自律", "english": "Disciplined", "value": 1, "color": "blue", "image": "/cardset/自律.png" }
+    "front": {
+      "title": "情绪化",
+      "english": "Emotional",
+      "value": 3,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E6%83%85%E7%BB%AA%E5%8C%96.png"
+    },
+    "back": {
+      "title": "自律",
+      "english": "Disciplined",
+      "value": 1,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E8%87%AA%E5%BE%8B.png"
+    }
   },
   {
     "id": "card_11",
-    "front": { "title": "内心保守", "english": "Guarded", "value": 3, "color": "blue", "image": "/cardset/内心保守.png" },
-    "back": { "title": "乐于分享", "english": "Sharing", "value": 1, "color": "red", "image": "/cardset/乐于分享.png" }
+    "front": {
+      "title": "内心保守",
+      "english": "Guarded",
+      "value": 3,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E5%86%85%E5%BF%83%E4%BF%9D%E5%AE%88.png"
+    },
+    "back": {
+      "title": "乐于分享",
+      "english": "Sharing",
+      "value": 1,
+      "color": "red",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E4%B9%90%E4%BA%8E%E5%88%86%E4%BA%AB.png"
+    }
   },
   {
     "id": "card_12",
-    "front": { "title": "相安无事最重要", "english": "Keep the Peace", "value": 2, "color": "green", "image": "/cardset/相安无事最重要.png" },
-    "back": { "title": "坚持原则最重要", "english": "Stick to Principles", "value": 2, "color": "blue", "image": "/cardset/坚持原则最重要.png" }
+    "front": {
+      "title": "相安无事最重要",
+      "english": "Keep the Peace",
+      "value": 2,
+      "color": "green",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E7%9B%B8%E5%AE%89%E6%97%A0%E4%BA%8B%E6%9C%80%E9%87%8D%E8%A6%81.png"
+    },
+    "back": {
+      "title": "坚持原则最重要",
+      "english": "Stick to Principles",
+      "value": 2,
+      "color": "blue",
+      "image": "https://iuf68vj2il5rdowznz3e9.oss-cn-hangzhou.aliyuncs.com/tc.wang/picture/%E5%9D%9A%E6%8C%81%E5%8E%9F%E5%88%99%E6%9C%80%E9%87%8D%E8%A6%81.png"
+    }
   }
 ]

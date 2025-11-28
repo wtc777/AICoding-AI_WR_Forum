@@ -22,6 +22,8 @@ _rate_limit_store: Dict[str, list[float]] = {}
 
 
 def _check_rate_limit(key: str, limit: int, period_seconds: int) -> None:
+    if limit <= 0:
+        return  # rate limiting disabled
     now = time.time()
     entries = _rate_limit_store.get(key, [])
     entries = [ts for ts in entries if ts > now - period_seconds]
