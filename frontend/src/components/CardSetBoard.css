@@ -1,6 +1,6 @@
 .cardset-wrapper {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 380px minmax(0, 1.6fr);
   gap: 16px;
   align-items: start;
 }
@@ -113,6 +113,7 @@
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   display: grid;
   gap: 14px;
+  min-width: 0;
 }
 
 .cardset-toolbar {

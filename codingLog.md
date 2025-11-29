@@ -176,3 +176,33 @@
 - Mitigation: Context menus stay available on images since drag is not bound to <img>.
 - Tests: Not run (interaction/style change).
 - TODO: If needed, add tooltip to drag handle for discoverability.
+
+### 2025-11-29 21:36 - Full-width cards on mobile parse page
+- Files: `frontend/src/pages/ParsePage.tsx`
+- Summary: Wrapped result card in a full-width container to ensure horizontal fill on mobile.
+- Layout: CardSetBoard card already forced to full width with zero body padding and inner padding.
+- UX: Prevents narrow containers for解析区和解析结果区 on small screens.
+- Risk: None expected; layout only.
+- Mitigation: Card widths are explicitly 100% with container wrapper.
+- Tests: Not run (layout-only).
+- TODO: Consider mobile-specific padding tweaks if overflow appears.
+
+### 2025-11-29 21:38 - Make board column slightly wider than deck
+- Files: `frontend/src/components/CardSetBoard.css`
+- Summary: Adjusted grid columns to 380px deck + 1.6fr board to emphasize larger placement area.
+- Layout: Added min-width: 0 to board to allow it to flex without overflow.
+- UX: Placement area now visibly wider than the deck, including on mobile widths.
+- Risk: Minor impact on extreme narrow screens.
+- Mitigation: Grid still collapses to single column at small breakpoints.
+- Tests: Not run (CSS-only).
+- TODO: Consider horizontal scroll or zoom aids if small devices struggle.
+
+### 2025-11-29 21:45 - Redirect unauthenticated users to login
+- Files: `frontend/src/App.tsx`
+- Summary: Added startup effect to redirect to /login when no user session is present.
+- Behavior: Applies to all routes except login/register; keeps previous path in state for return after login.
+- UX: Prevents unauthenticated entry into protected pages before routing renders.
+- Risk: Minimal; depends on accurate useAuthStore user state on load.
+- Mitigation: Existing RequireAuth guard still acts as a safety net.
+- Tests: Not run (auth redirect change).
+- TODO: None.

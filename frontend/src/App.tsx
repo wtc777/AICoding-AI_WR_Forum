@@ -1,6 +1,6 @@
 ﻿import { Layout, Menu, Button } from 'antd';
 import { Link, Route, Routes, useLocation, useNavigate, Navigate } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -26,6 +26,12 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+
+  useEffect(() => {
+    if (!user && location.pathname !== '/login' && location.pathname !== '/register') {
+      navigate('/login', { replace: true, state: { from: location.pathname } });
+    }
+  }, [user, location.pathname, navigate]);
 
   const selected = useMemo(() => {
     if (location.pathname.startsWith('/articles/new')) return ['write'];

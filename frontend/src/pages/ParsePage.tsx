@@ -420,11 +420,13 @@ function ParsePage() {
 
   return (
     <Space direction="vertical" style={{ width: '100%' }} size="large">
-      <Card title="卡组摆放（支持拖拽、切换正反面、计算得分）" bordered>
-        <CardSetBoard ref={boardRef} parsedCards={result?.cards_json} onStateChange={setCardSetState} />
+      <Card title="卡组摆放（支持拖拽、切换正反面、计算得分）" bordered bodyStyle={{ padding: 0 }} style={{ width: '100%' }}>
+        <div style={{ width: '100%', padding: 16 }}>
+          <CardSetBoard ref={boardRef} parsedCards={result?.cards_json} onStateChange={setCardSetState} />
+        </div>
       </Card>
 
-      <Card title="卡牌解析" bordered>
+      <Card title="卡牌解析" bordered style={{ width: '100%' }}>
         <Form form={form} layout="vertical" onFinish={onFinish}>
           <Form.Item label="卡组类型" name="card_type">
             <Input />
@@ -448,6 +450,7 @@ function ParsePage() {
         </Form>
       </Card>
 
+      <div style={{ width: '100%' }}>
       {result && (
         <Card
           title="解析结果"
@@ -498,6 +501,7 @@ function ParsePage() {
           />
         </Card>
       )}
+      </div>
     </Space>
   );
 }
