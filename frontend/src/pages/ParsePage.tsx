@@ -39,6 +39,27 @@ function ParsePage() {
       scores.green ?? 0,
     )}）`;
 
+  const cleanResponseText = (text: string | undefined | null) => {
+    if (!text) return '';
+    const raw = text.trim();
+    const fenced = raw.match(/^```[a-zA-Z0-9]*\s+([\s\S]*?)\s*```$/);
+    if (fenced && fenced[1]) {
+      return fenced[1].trim();
+    }
+    if (!raw.startsWith('```')) return raw;
+    const lines = raw.split('\n');
+    if (lines[0].startsWith('```')) {
+      lines.shift();
+    }
+    while (lines.length > 0 && lines[lines.length - 1].trim() === '') {
+      lines.pop();
+    }
+    if (lines.length > 0 && lines[lines.length - 1].trim().startsWith('```')) {
+      lines.pop();
+    }
+    return lines.join('\n').trim();
+  };
+
   const scoringRulePrompt =
     '计分规则：阵列为 3 行 4 列，从上到下、从左到右编号 1-12；每张卡牌的基础分是卡面 value，每行有额外加成：第一排每张 +2，第二排每张 +1，第三排不加分。四种颜色分别累计得到总分。';
 
@@ -119,7 +140,7 @@ function ParsePage() {
       message.loading({ content: '步骤3/3：等待返回结果...', key: msgKey, duration: 0 });
 
       setResult(data);
-      setResponseText(data.ai_response || '');
+      setResponseText(cleanResponseText(data.ai_response || ''));
       message.success({ content: '解析完成', key: msgKey, duration: 2 });
     } catch (err: any) {
       const detail = err.response?.data?.detail || err.message || '解析失败';
@@ -156,7 +177,7 @@ function ParsePage() {
 | 第一排 第3列 | 条理 | 蓝 | 1 |
 | 第一排 第4列 | 批判性强 | 黄 | 3 |`;
       setResult({ ai_response: mock, cards_json: [] });
-      setResponseText(mock);
+      setResponseText(cleanResponseText(mock));
       message.success('已生成示例解析结果');
       return;
     }
@@ -393,7 +414,7 @@ function ParsePage() {
 
   useEffect(() => {
     if (result) {
-      setResponseText(result.ai_response || '');
+      setResponseText(cleanResponseText(result.ai_response || ''));
     }
   }, [result]);
 
@@ -458,7 +479,7 @@ function ParsePage() {
               </Form>
             )}
             <div data-color-mode="light" ref={markdownRef} style={{ background: '#fff', padding: 12 }}>
-              <MarkdownPreview source={responseText || ''} />
+              <MarkdownPreview key={responseText || 'empty'} source={responseText || '暂无解析内容'} />
             </div>
           </div>
           <List

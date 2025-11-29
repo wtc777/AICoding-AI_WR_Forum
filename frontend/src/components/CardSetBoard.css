@@ -1,6 +1,6 @@
 .cardset-wrapper {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -39,9 +39,19 @@
 }
 
 .cardset-deck-list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 12px;
+}
+
+.cardset-deck-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.cardset-deck-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .cardset-deck-card {
@@ -52,6 +62,11 @@
   position: relative;
   background: #f8fafc;
   transition: transform 0.1s ease, box-shadow 0.12s ease;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 110px;
 }
 
 .cardset-deck-card:hover {
@@ -59,8 +74,8 @@
   transform: translateY(-2px);
 }
 
-.cardset-deck-card.dragging {
-  opacity: 0.9;
+.cardset-deck-card:focus-visible {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 .deck-side {
@@ -77,8 +92,9 @@
 
 .deck-img {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
+  height: 100%;
+  object-fit: contain;
+  background: #ffffff;
   display: block;
 }
 
@@ -134,9 +150,10 @@
   padding: 0;
 }
 
-.cardset-slot.hovered {
+.cardset-slot.drag-over {
   border-color: #2563eb;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
+  transform: translateY(-1px);
 }
 
 .cardset-card {
@@ -146,8 +163,11 @@
   overflow: hidden;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(0, 0, 0, 0.06);
-  cursor: grab;
+  cursor: pointer;
   background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cardset-card.image-only {

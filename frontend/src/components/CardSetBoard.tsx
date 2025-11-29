@@ -1,5 +1,5 @@
-﻿import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import type { DragEvent, ForwardedRef } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import type { DragEvent, ForwardedRef, TouchEvent } from 'react';
 import { Button, Space, Tag, message, Spin } from 'antd';
 import { ReloadOutlined, CalculatorOutlined, ExportOutlined, InboxOutlined, BugOutlined } from '@ant-design/icons';
 import api from '../utils/api';
@@ -31,7 +31,6 @@ export interface ParsedCardItem {
 }
 
 type SlotCard = CardFace & { cardId: string; side: CardSide; slotIndex: number };
-type DragPayload = { type: 'deck'; card: SlotCard } | { type: 'slot'; index: number };
 
 export interface CardSetState {
   layout: Array<
@@ -68,8 +67,8 @@ export interface CardSetHandle {
 const emptySlots = () => Array<SlotCard | null>(12).fill(null);
 
 const slotScoreLabel = (score: number) => {
-  if (score > 17) return '超级';
-  if (score > 10 && score < 17) return '明显';
+  if (score > 17) return '高潜';
+  if (score > 10 && score < 17) return '中潜';
   return '一般';
 };
 
@@ -97,8 +96,10 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   const [slots, setSlots] = useState<(SlotCard | null)[]>(() => emptySlots());
   const [used, setUsed] = useState<Set<string>>(() => new Set());
   const [deckFace, setDeckFace] = useState<Record<string, CardSide>>(() => ({}));
-  const [scoreText, setScoreText] = useState('当前未计分，点击“计算得分”查看阵容得分');
-  const dragPayload = useRef<DragPayload | null>(null);
+  const [scoreText, setScoreText] = useState('当前未计分，点击下方按钮查看加成分数。');
+  const dragSource = useRef<number | null>(null);
+  const [hoverSlot, setHoverSlot] = useState<number | null>(null);
+  const touchSource = useRef<number | null>(null);
 
   const cardMap = useMemo(
     () =>
@@ -137,7 +138,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     setDeckFace(nextDeck);
     setSlots(emptySlots());
     setUsed(new Set());
-    setScoreText('当前未计分，点击“计算得分”查看阵容得分');
+    setScoreText('当前未计分，点击下方按钮查看加成分数。');
   }, [cards]);
 
   const calculateScores = (currentSlots: (SlotCard | null)[]) => {
@@ -175,7 +176,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     const row = Math.floor(slotIndex / 4) + 1;
     const col = (slotIndex % 4) + 1;
     const rowLabel = row === 1 ? '第一排' : row === 2 ? '第二排' : '第三排';
-    const positionLabel = `${rowLabel} 第${col}列`;
+    const positionLabel = `${rowLabel} 第${col}位`;
     return {
       cardId: slot.cardId,
       side: slot.side,
@@ -213,7 +214,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
       });
       return next;
     });
-    setScoreText('当前未计分，点击“计算得分”查看阵容得分');
+    setScoreText('当前未计分，点击下方按钮查看加成分数。');
   };
 
   const debugFillRandom = () => {
@@ -242,7 +243,6 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     setSlots(nextSlots);
     setUsed(nextUsed);
     setDeckFace(nextDeckFace);
-    // compute scores after auto fill for consistency
     const scores = calculateScores(nextSlots);
     setScoreText(scoreLine(scores));
   };
@@ -255,8 +255,8 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   const handleExport = () => {
     const layout = slots.map((slot, idx) => (slot ? slotToLayoutItem(slot, idx) : null));
     // eslint-disable-next-line no-console
-    console.log('[cardset] 当前卡组摆放', layout);
-    message.success('已将当前摆放输出到控制台');
+    console.log('[cardset] 当前阵列', layout);
+    message.success('已将当前阵列输出到控制台');
   };
 
   const captureImage = async () => {
@@ -270,14 +270,14 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     canvas.height = rows * slotH + padding * 2 + (rows - 1) * 14 + 50;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      message.error('导出失败：无法创建画布');
+      message.error('导出失败，无法创建画布');
       return Promise.reject(new Error('Canvas not available'));
     }
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#111827';
     ctx.font = 'bold 18px Segoe UI';
-    ctx.fillText('卡组摆放', padding, padding + 12);
+    ctx.fillText('卡牌阵列', padding, padding + 12);
 
     const loadImage = (src: string) =>
       new Promise<HTMLImageElement>((resolve, reject) => {
@@ -349,7 +349,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
       link.href = url;
       link.click();
       URL.revokeObjectURL(url);
-      message.success('已导出当前摆放为图片');
+      message.success('已导出当前阵列为图片');
     } catch (err: any) {
       message.error(err?.message || '导出失败');
     }
@@ -363,84 +363,25 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     [slots],
   );
 
-  const toggleDeckFace = (cardId: string) => {
+  const findFirstEmptySlot = () => slots.findIndex((slot) => slot === null);
+
+  const handlePlaceCard = (cardId: string, side: CardSide) => {
     if (used.has(cardId)) return;
-    setDeckFace((prev) => ({
-      ...prev,
-      [cardId]: prev[cardId] === 'front' ? 'back' : 'front',
-    }));
-  };
-
-  const handleDeckDragStart = (card: CardDefinition) => (event: DragEvent<HTMLDivElement>) => {
-    if (used.has(card.id)) return;
-    const side = deckFace[card.id] || 'front';
-    const face = getFace(card, side);
-    dragPayload.current = {
-      type: 'deck',
-      card: { ...face, cardId: card.id, side, slotIndex: -1 },
-    };
-    event.dataTransfer.effectAllowed = 'copy';
-    event.dataTransfer.setData('text/plain', 'deck');
-    requestAnimationFrame(() => {
-      event.currentTarget.classList.add('dragging');
-    });
-  };
-
-  const handleSlotDragStart = (index: number) => (event: DragEvent<HTMLDivElement>) => {
-    const slot = slots[index];
-    if (!slot) return;
-    dragPayload.current = { type: 'slot', index };
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', 'slot');
-    requestAnimationFrame(() => {
-      event.currentTarget.classList.add('dragging');
-    });
-  };
-
-  const clearDrag = (event: DragEvent<HTMLDivElement>) => {
-    dragPayload.current = null;
-    event.currentTarget.classList.remove('dragging');
-    document.querySelectorAll('.cardset-slot').forEach((slot) => slot.classList.remove('hovered'));
-  };
-
-  const handleDragOver = (targetIdx: number) => (event: DragEvent<HTMLDivElement>) => {
-    if (!dragPayload.current) return;
-    if (dragPayload.current.type === 'deck' && slots[targetIdx]) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = dragPayload.current.type === 'deck' ? 'copy' : 'move';
-    event.currentTarget.classList.add('hovered');
-  };
-
-  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    event.currentTarget.classList.remove('hovered');
-  };
-
-  const handleDrop = (targetIdx: number) => (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.currentTarget.classList.remove('hovered');
-    const payload = dragPayload.current;
-    if (!payload) return;
-
-    if (payload.type === 'slot') {
-      if (payload.index === targetIdx) return;
-      setSlots((prev) => {
-        const next = [...prev];
-        const sourceCard = next[payload.index];
-        const targetCard = next[targetIdx];
-        next[targetIdx] = sourceCard ? { ...sourceCard, slotIndex: targetIdx } : null;
-        next[payload.index] = targetCard ? { ...targetCard, slotIndex: payload.index } : null;
-        return next;
-      });
-    } else if (payload.type === 'deck') {
-      if (slots[targetIdx]) return;
-      const card = payload.card;
-      setSlots((prev) => {
-        const next = [...prev];
-        next[targetIdx] = { ...card, slotIndex: targetIdx };
-        return next;
-      });
-      setUsed((prev) => new Set([...prev, card.cardId]));
+    const cardDef = cardMap[cardId];
+    if (!cardDef) return;
+    const targetIdx = findFirstEmptySlot();
+    if (targetIdx === -1) {
+      message.warning('空位已满，请先调整下方阵列');
+      return;
     }
+    const face = getFace(cardDef, side);
+    setSlots((prev) => {
+      const next = [...prev];
+      next[targetIdx] = { ...face, cardId, side, slotIndex: targetIdx };
+      return next;
+    });
+    setUsed((prev) => new Set([...prev, cardId]));
+    setDeckFace((prev) => ({ ...prev, [cardId]: side }));
   };
 
   const handleSlotClick = (idx: number) => {
@@ -463,6 +404,86 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
       };
       return next;
     });
+  };
+
+  const swapSlots = (sourceIdx: number, targetIdx: number) => {
+    if (sourceIdx === targetIdx) return;
+    setSlots((prev) => {
+      const next = [...prev];
+      const sourceCard = next[sourceIdx];
+      const targetCard = next[targetIdx];
+      next[targetIdx] = sourceCard ? { ...sourceCard, slotIndex: targetIdx } : null;
+      next[sourceIdx] = targetCard ? { ...targetCard, slotIndex: sourceIdx } : null;
+      return next;
+    });
+  };
+
+  const handleSlotDragStart = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
+    if (!slots[idx]) return;
+    dragSource.current = idx;
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', 'slot');
+  };
+
+  const handleSlotDragOver = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
+    if (dragSource.current === null) return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    if (hoverSlot !== idx) setHoverSlot(idx);
+  };
+
+  const handleSlotDragLeave = () => {
+    setHoverSlot((prev) => (prev !== null ? null : prev));
+  };
+
+  const handleSlotDrop = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const sourceIdx = dragSource.current;
+    dragSource.current = null;
+    setHoverSlot(null);
+    if (sourceIdx === null || sourceIdx === idx) return;
+    swapSlots(sourceIdx, idx);
+  };
+
+  const handleSlotDragEnd = () => {
+    dragSource.current = null;
+    setHoverSlot(null);
+  };
+
+  const handleSlotTouchStart = (idx: number) => (event: TouchEvent<HTMLDivElement>) => {
+    if (!slots[idx]) return;
+    touchSource.current = idx;
+    setHoverSlot(idx);
+    event.stopPropagation();
+  };
+
+  const findSlotIndexFromPoint = (x: number, y: number) => {
+    const target = document.elementFromPoint(x, y);
+    const slotEl = target?.closest('.cardset-slot') as HTMLElement | null;
+    const attr = slotEl?.dataset?.slotIndex;
+    if (!attr) return null;
+    const parsed = parseInt(attr, 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  };
+
+  const handleSlotTouchMove = (event: TouchEvent<HTMLDivElement>) => {
+    if (touchSource.current === null) return;
+    const touch = event.touches[0];
+    if (!touch) return;
+    const idx = findSlotIndexFromPoint(touch.clientX, touch.clientY);
+    if (idx !== null && hoverSlot !== idx) {
+      setHoverSlot(idx);
+    }
+  };
+
+  const handleSlotTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
+    const sourceIdx = touchSource.current;
+    touchSource.current = null;
+    const touch = event.changedTouches[0];
+    const targetIdx = touch ? findSlotIndexFromPoint(touch.clientX, touch.clientY) : null;
+    setHoverSlot(null);
+    if (sourceIdx === null || targetIdx === null || sourceIdx === targetIdx) return;
+    swapSlots(sourceIdx, targetIdx);
   };
 
   const handleImportFromParsed = () => {
@@ -503,10 +524,10 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
       <aside className="cardset-deck">
         <div className="cardset-deck-header">
           <div>
-            <div className="cardset-title">卡组（点击切换正反）</div>
-            <div className="cardset-subtitle">左侧卡组拖拽到右侧阵型，已使用的卡牌会自动隐藏</div>
+            <div className="cardset-title">卡组（正反面双列）</div>
+            <div className="cardset-subtitle">点击需要的正面或反面，自动放入下方空位；已放置行会隐藏</div>
           </div>
-          <Tag color="blue">{usedCount}/12 已上阵</Tag>
+          <Tag color="blue">{usedCount}/12 已放置</Tag>
         </div>
         {loadingCards ? (
           <div style={{ padding: 16 }}>
@@ -514,28 +535,58 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
           </div>
         ) : (
           <div className="cardset-deck-list">
-            {unusedCards.map((card) => {
-              const side = deckFace[card.id] || 'front';
-              const face = getFace(card, side);
-              return (
-                <div
-                  key={card.id}
-                  className="cardset-deck-card"
-                  draggable
-                  onClick={() => toggleDeckFace(card.id)}
-                  onDragStart={handleDeckDragStart(card)}
-                  onDragEnd={clearDrag}
-                >
-                  <span className="deck-side">{side === 'front' ? '正' : '反'}</span>
-                  {face.image ? (
-                    <img className="deck-img" src={face.image} alt={face.title} />
-                  ) : (
-                    <div className="deck-img deck-placeholder">{face.title}</div>
-                  )}
-                </div>
-              );
-            })}
-            {unusedCards.length === 0 && <div className="cardset-empty">所有卡牌都已放置</div>}
+            {unusedCards.length === 0 ? (
+              <div className="cardset-empty">所有可用卡牌都已放置</div>
+            ) : (
+              <div className="cardset-deck-grid">
+                {unusedCards.map((card) => {
+                  const frontFace = getFace(card, 'front');
+                  const backFace = getFace(card, 'back');
+                  return (
+                    <div key={card.id} className="cardset-deck-row">
+                      <div
+                        className="cardset-deck-card"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handlePlaceCard(card.id, 'front')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handlePlaceCard(card.id, 'front');
+                          }
+                        }}
+                      >
+                        <span className="deck-side">正</span>
+                        {frontFace.image ? (
+                          <img className="deck-img" src={frontFace.image} alt={frontFace.title} />
+                        ) : (
+                          <div className="deck-img deck-placeholder">{frontFace.title}</div>
+                        )}
+                      </div>
+                      <div
+                        className="cardset-deck-card"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => handlePlaceCard(card.id, 'back')}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handlePlaceCard(card.id, 'back');
+                          }
+                        }}
+                      >
+                        <span className="deck-side">反</span>
+                        {backFace.image ? (
+                          <img className="deck-img" src={backFace.image} alt={backFace.title} />
+                        ) : (
+                          <div className="deck-img deck-placeholder">{backFace.title}</div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </aside>
@@ -544,22 +595,23 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
         <div className="cardset-toolbar">
           <Space>
             <Button icon={<CalculatorOutlined />} onClick={handleCalc}>
-              计算得分
+              计算分数
             </Button>
             <Button icon={<ReloadOutlined />} onClick={handleReset}>
               重置
             </Button>
             <Button icon={<BugOutlined />} onClick={debugFillRandom}>
-              调试随机上阵
+              随机填充
             </Button>
             <Button icon={<ExportOutlined />} onClick={exportAsImage}>
-              导出布局图片
+              导出阵列图片
             </Button>
           </Space>
           <Space>
             <Button icon={<InboxOutlined />} onClick={handleImportFromParsed} disabled={!parsedCards || parsedCards.length === 0}>
-              导入解析结果
+              导入识别结果
             </Button>
+            <Button onClick={handleExport}>导出到控制台</Button>
           </Space>
         </div>
 
@@ -567,18 +619,22 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
           {slots.map((slot, idx) => (
             <div
               key={idx}
-              className={`cardset-slot${slot ? ' filled' : ''}`}
-              onDragOver={handleDragOver(idx)}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop(idx)}
+              data-slot-index={idx}
+              className={`cardset-slot${slot ? ' filled' : ''}${hoverSlot === idx ? ' drag-over' : ''}`}
               onClick={() => handleSlotClick(idx)}
+              onDragOver={handleSlotDragOver(idx)}
+              onDragLeave={handleSlotDragLeave}
+              onDrop={handleSlotDrop(idx)}
+              onTouchStart={handleSlotTouchStart(idx)}
+              onTouchMove={handleSlotTouchMove}
+              onTouchEnd={handleSlotTouchEnd}
             >
               {slot ? (
                 <div
                   className={`cardset-card${slot.image ? ' image-only' : ''}`}
                   draggable
                   onDragStart={handleSlotDragStart(idx)}
-                  onDragEnd={clearDrag}
+                  onDragEnd={handleSlotDragEnd}
                 >
                   {slot.image ? <img className="slot-img" src={slot.image} alt={slot.title} /> : <span>{slot.title}</span>}
                 </div>
@@ -590,11 +646,11 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
         </div>
 
         <div className="cardset-instructions">
-          <div>操作提示：</div>
+          <div>操作提示</div>
           <ol>
-            <li>点击卡组图片切换正反面，拖拽到右侧空位完成摆放。</li>
-            <li>已放置的卡牌可以拖拽互换位置，点击可在正反面之间切换。</li>
-            <li>根据行数存在额外加成：第一行 +2，第二行 +1，第三行无加成。</li>
+            <li>点击左侧正面或反面卡牌，将自动填充下方第一个空位，放置后该行会隐藏。</li>
+            <li>点击已放置的卡牌可在正反面间切换；需要重算分数请点击“计算分数”。</li>
+            <li>计分规则：三行加成为 +2 / +1 / +0，对应上到下三行。</li>
           </ol>
         </div>
 
@@ -607,4 +663,3 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
 const CardSetBoard = forwardRef<CardSetHandle, CardSetBoardProps>(CardSetBoardBase);
 
 export default CardSetBoard;
-
