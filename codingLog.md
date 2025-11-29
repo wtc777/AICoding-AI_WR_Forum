@@ -135,3 +135,24 @@
 - Mitigation: Falls back to original text if no fence pattern matches.
 - Tests: Not run (string parsing change).
 - TODO: Consider handling other fenced patterns if backend format shifts.
+
+### 2025-11-29 20:59 - Keep 3x4 layout on mobile
+- Files: `frontend/src/components/CardSetBoard.css`
+- Summary: Removed mobile override that collapsed slots to 2 columns; board stays 3行4列.
+- Behavior: Slot grid remains 4 columns across viewports to satisfy mobile layout requirement.
+- UX: Ensures consistent visual structure between desktop and mobile.
+- Risk: Possible horizontal squeeze on very narrow screens.
+- Mitigation: Deck still collapses; adjust zoom if needed.
+- Tests: Not run (CSS-only).
+- TODO: Consider horizontal scroll or zoom aids if small devices struggle.
+
+### 2025-11-29 21:03 - Prevent touch long-press conflicts when swapping
+- Files: `frontend/src/components/CardSetBoard.tsx`, `frontend/src/components/CardSetBoard.css`
+- Summary: Added preventDefault/stopPropagation on touch drag handlers to reduce long-press context triggers.
+- Interaction: Touch drag still swaps slots; context menu suppressed on card elements.
+- Styles: Disabled touch-action/user-select/user-drag on cards to stabilize gestures.
+- UX: Lowers chance of long-press save image popping during drag on mobile.
+- Risk: Minor impact on scrolling within the board area.
+- Mitigation: Only applied to card elements; deck/sidebar scrolling unaffected.
+- Tests: Not run (interaction/style change).
+- TODO: If scroll conflicts appear, add gesture threshold or temporary drag mode toggle.

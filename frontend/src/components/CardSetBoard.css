@@ -168,6 +168,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .cardset-card.image-only {
@@ -221,9 +224,5 @@
   .cardset-deck {
     position: relative;
     max-height: none;
-  }
-
-  .cardset-slot-grid {
-    grid-template-columns: repeat(2, minmax(140px, 1fr));
   }
 }

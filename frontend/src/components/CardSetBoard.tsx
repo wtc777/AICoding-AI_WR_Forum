@@ -455,6 +455,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     touchSource.current = idx;
     setHoverSlot(idx);
     event.stopPropagation();
+    event.preventDefault();
   };
 
   const findSlotIndexFromPoint = (x: number, y: number) => {
@@ -468,6 +469,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
 
   const handleSlotTouchMove = (event: TouchEvent<HTMLDivElement>) => {
     if (touchSource.current === null) return;
+    event.preventDefault();
     const touch = event.touches[0];
     if (!touch) return;
     const idx = findSlotIndexFromPoint(touch.clientX, touch.clientY);
@@ -635,6 +637,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
                   draggable
                   onDragStart={handleSlotDragStart(idx)}
                   onDragEnd={handleSlotDragEnd}
+                  onContextMenu={(e) => e.preventDefault()}
                 >
                   {slot.image ? <img className="slot-img" src={slot.image} alt={slot.title} /> : <span>{slot.title}</span>}
                 </div>
