@@ -1,0 +1,14 @@
+### 2025-11-29 19:05 - Align frontend proxy port
+- Files: `frontend/vite.config.ts`
+- Summary: Updated Vite dev proxy port to match backend uvicorn startup.
+- Reason: Avoid socket hang up errors during register API calls.
+- Impact: Frontend /api and /uploads requests now reach running backend.
+- Scope: Dev server proxy configuration only; build output unchanged.
+- Risk: Assumes backend continues to run on 127.0.0.1:8001.
+- Mitigation: Adjust backend start script or proxy target together if port changes.
+- Test: Not run (verify by starting frontend and registering).
+- FollowUp: Validate registration flow after restarting dev server.
+- Config: No environment variables were changed.
+- Notes: Both API and uploads proxies now point to the same backend port.
+- Compatibility: Matches current start_backend.bat uvicorn port configuration.
+- TODO: Add guardrails to detect proxy/backend port mismatches automatically.
