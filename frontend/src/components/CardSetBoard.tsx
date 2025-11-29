@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import type { DragEvent, ForwardedRef, TouchEvent } from 'react';
+import type { ForwardedRef } from 'react';
 import { Button, Space, Tag, message, Spin } from 'antd';
 import { ReloadOutlined, CalculatorOutlined, ExportOutlined, InboxOutlined, BugOutlined } from '@ant-design/icons';
 import api from '../utils/api';
@@ -99,7 +99,6 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
   const [scoreText, setScoreText] = useState('当前未计分，点击下方按钮查看加成分数。');
   const dragSource = useRef<number | null>(null);
   const [hoverSlot, setHoverSlot] = useState<number | null>(null);
-  const touchSource = useRef<number | null>(null);
 
   const cardMap = useMemo(
     () =>
@@ -418,75 +417,56 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
     });
   };
 
-  const handleSlotDragStart = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
-    if (!slots[idx]) return;
-    dragSource.current = idx;
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', 'slot');
-  };
-
-  const handleSlotDragOver = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
-    if (dragSource.current === null) return;
-    event.preventDefault();
-    event.dataTransfer.dropEffect = 'move';
-    if (hoverSlot !== idx) setHoverSlot(idx);
-  };
-
-  const handleSlotDragLeave = () => {
-    setHoverSlot((prev) => (prev !== null ? null : prev));
-  };
-
-  const handleSlotDrop = (idx: number) => (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    const sourceIdx = dragSource.current;
-    dragSource.current = null;
-    setHoverSlot(null);
-    if (sourceIdx === null || sourceIdx === idx) return;
-    swapSlots(sourceIdx, idx);
-  };
-
-  const handleSlotDragEnd = () => {
-    dragSource.current = null;
-    setHoverSlot(null);
-  };
-
-  const handleSlotTouchStart = (idx: number) => (event: TouchEvent<HTMLDivElement>) => {
-    if (!slots[idx]) return;
-    touchSource.current = idx;
-    setHoverSlot(idx);
-    event.stopPropagation();
-    event.preventDefault();
-  };
-
-  const findSlotIndexFromPoint = (x: number, y: number) => {
-    const target = document.elementFromPoint(x, y);
+  const findSlotIndexFromPoint = (clientX: number, clientY: number) => {
+    const target = document.elementFromPoint(clientX, clientY);
     const slotEl = target?.closest('.cardset-slot') as HTMLElement | null;
-    const attr = slotEl?.dataset?.slotIndex;
-    if (!attr) return null;
-    const parsed = parseInt(attr, 10);
+    const idxStr = slotEl?.dataset?.slotIndex;
+    if (!idxStr) return null;
+    const parsed = parseInt(idxStr, 10);
     return Number.isFinite(parsed) ? parsed : null;
   };
 
-  const handleSlotTouchMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (touchSource.current === null) return;
-    event.preventDefault();
-    const touch = event.touches[0];
-    if (!touch) return;
-    const idx = findSlotIndexFromPoint(touch.clientX, touch.clientY);
-    if (idx !== null && hoverSlot !== idx) {
+  const endDrag = () => {
+    dragSource.current = null;
+    setHoverSlot(null);
+    window.removeEventListener('pointermove', handlePointerMove);
+    window.removeEventListener('pointerup', handlePointerUp);
+  };
+
+  const handlePointerMove = (event: PointerEvent) => {
+    if (dragSource.current === null) return;
+    const idx = findSlotIndexFromPoint(event.clientX, event.clientY);
+    if (idx !== null && idx !== hoverSlot) {
       setHoverSlot(idx);
     }
   };
 
-  const handleSlotTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    const sourceIdx = touchSource.current;
-    touchSource.current = null;
-    const touch = event.changedTouches[0];
-    const targetIdx = touch ? findSlotIndexFromPoint(touch.clientX, touch.clientY) : null;
-    setHoverSlot(null);
-    if (sourceIdx === null || targetIdx === null || sourceIdx === targetIdx) return;
-    swapSlots(sourceIdx, targetIdx);
+  const handlePointerUp = (event: PointerEvent) => {
+    if (dragSource.current === null) return;
+    const sourceIdx = dragSource.current;
+    const targetIdx = findSlotIndexFromPoint(event.clientX, event.clientY);
+    if (targetIdx !== null && slots[targetIdx]) {
+      swapSlots(sourceIdx, targetIdx);
+    }
+    endDrag();
   };
+
+  const handleDragStart = (idx: number) => (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (!slots[idx]) return;
+    dragSource.current = idx;
+    setHoverSlot(idx);
+    event.preventDefault();
+    event.stopPropagation();
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+  };
+
+  useEffect(
+    () => () => {
+      endDrag();
+    },
+    [],
+  );
 
   const handleImportFromParsed = () => {
     if (!parsedCards || parsedCards.length === 0) {
@@ -624,21 +604,19 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
               data-slot-index={idx}
               className={`cardset-slot${slot ? ' filled' : ''}${hoverSlot === idx ? ' drag-over' : ''}`}
               onClick={() => handleSlotClick(idx)}
-              onDragOver={handleSlotDragOver(idx)}
-              onDragLeave={handleSlotDragLeave}
-              onDrop={handleSlotDrop(idx)}
-              onTouchStart={handleSlotTouchStart(idx)}
-              onTouchMove={handleSlotTouchMove}
-              onTouchEnd={handleSlotTouchEnd}
             >
               {slot ? (
                 <div
                   className={`cardset-card${slot.image ? ' image-only' : ''}`}
-                  draggable
-                  onDragStart={handleSlotDragStart(idx)}
-                  onDragEnd={handleSlotDragEnd}
-                  onContextMenu={(e) => e.preventDefault()}
                 >
+                  <button
+                    type="button"
+                    className="cardset-drag-handle"
+                    aria-label="拖动调整位置"
+                    onPointerDown={handleDragStart(idx)}
+                  >
+                    ⇅
+                  </button>
                   {slot.image ? <img className="slot-img" src={slot.image} alt={slot.title} /> : <span>{slot.title}</span>}
                 </div>
               ) : (
@@ -652,7 +630,7 @@ function CardSetBoardBase({ parsedCards, onStateChange }: CardSetBoardProps, ref
           <div>操作提示</div>
           <ol>
             <li>点击左侧正面或反面卡牌，将自动填充下方第一个空位，放置后该行会隐藏。</li>
-            <li>点击已放置的卡牌可在正反面间切换；需要重算分数请点击“计算分数”。</li>
+            <li>点击已放置的卡牌可在正反面间切换；需要互换位置时，用卡片右上角的 ⇅ 拖动手柄拖到目标卡即可。</li>
             <li>计分规则：三行加成为 +2 / +1 / +0，对应上到下三行。</li>
           </ol>
         </div>

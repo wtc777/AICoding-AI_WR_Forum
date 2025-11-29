@@ -156,3 +156,23 @@
 - Mitigation: Only applied to card elements; deck/sidebar scrolling unaffected.
 - Tests: Not run (interaction/style change).
 - TODO: If scroll conflicts appear, add gesture threshold or temporary drag mode toggle.
+
+### 2025-11-29 21:08 - Swap via double-tap/double-click instead of drag
+- Files: `frontend/src/components/CardSetBoard.tsx`, `frontend/src/components/CardSetBoard.css`
+- Summary: Removed slot drag swapping; now double-click/tap first card then second card to swap.
+- Interaction: Maintains single-click flip; double-tap detection added for mobile.
+- UX: Selected slot highlighted; updated instructions to describe the new flow.
+- Risk: Users accustomed to drag may need to learn the new gesture.
+- Mitigation: Instructions clarify both single-click flip and double-tap swap.
+- Tests: Not run (interaction change).
+- TODO: Consider debounce to avoid accidental double taps when scrolling.
+
+### 2025-11-29 21:15 - Drag handle based swapping to avoid image long-press conflicts
+- Files: `frontend/src/components/CardSetBoard.tsx`, `frontend/src/components/CardSetBoard.css`
+- Summary: Replaced double-tap swapping with drag handles that start pointer-based swaps; images remain free for system long-press actions.
+- Interaction: Drag only from the handle (⇅); hover target highlighted via pointer tracking; click still flips sides.
+- UX: Handle has enlarged touch area; instructions updated to mention handle drag.
+- Risk: Users must use handle for swapping; might need guidance initially.
+- Mitigation: Context menus stay available on images since drag is not bound to <img>.
+- Tests: Not run (interaction/style change).
+- TODO: If needed, add tooltip to drag handle for discoverability.
